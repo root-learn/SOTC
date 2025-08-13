@@ -19,11 +19,11 @@ from splat.segtypes.linker_entry import LinkerEntry
 ROOT = Path(__file__).parent
 TOOLS_DIR = ROOT / "tools"
 
-BASENAME = "SCPS_150.97"
-LD_PATH = f"{BASENAME}.ld"
-ELF_PATH = f"build/{BASENAME}"
-MAP_PATH = f"build/{BASENAME}.map"
-PRE_ELF_PATH = f"build/{BASENAME}.elf"
+#BASENAME = "SCPS_150.97"
+
+
+
+
 
 COMMON_INCLUDES = "-Iinclude -I include/sdk/common -I include/sdk/ee -I include/sdk -I include/gcc"
 
@@ -81,7 +81,7 @@ compiler_type = "gcc"
         )
 
 
-def build_stuff(linker_entries: List[LinkerEntry]):
+def build_stuff(basename, linker_entries: List[LinkerEntry]):
     built_objects: Set[Path] = set()
 
     def build(
@@ -184,25 +184,31 @@ def build_stuff(linker_entries: List[LinkerEntry]):
             print(f"ERROR: Unsupported build segment type {seg.type}")
             sys.exit(1)
 
+
+    elf_path = f"build/{basename}"
+    pre_elf_path = f"build/{basename}.elf"
+    ld_path = f"{basename}.ld"
+    map_path = f"build/{basename}.map"
+
     ninja.build(
-        PRE_ELF_PATH,
+        pre_elf_path,
         "ld",
-        LD_PATH,
+        ld_path,
         implicit=[str(obj) for obj in built_objects],
-        variables={"mapfile": MAP_PATH},
+        variables={"mapfile": map_path},
     )
 
     ninja.build(
-        ELF_PATH,
+        elf_path,
         "elf",
-        PRE_ELF_PATH,
+        pre_elf_path,
     )
 
     ninja.build(
-        ELF_PATH + ".ok",
+        elf_path + ".ok",
         "sha1sum",
         "checksum-SCPS_150.97.sha1",
-        implicit=[ELF_PATH],
+        implicit=[elf_path],
     )
 
 
@@ -246,7 +252,7 @@ def replace_instructions_with_opcodes(asm_folder: Path) -> None:
                 file.write(content)
 
 
-def split_binaries(targets=[]):
+def split_binaries(targets=[], no_short_loop=False):
     target_aliases = {
         "loader" : "SCPS_150.97", 
         "kernel" : "KERNEL.XFF"
@@ -273,11 +279,11 @@ def split_binaries(targets=[]):
 
         create_custom_specs()
 
-        build_stuff(linker_entries)
+        build_stuff(target_file, linker_entries)
 
         write_permuter_settings()
 
-        if not args.no_short_loop_workaround:
+        if not no_short_loop:
             replace_instructions_with_opcodes(split.config["options"]["asm_path"])
 
         if not os.path.isfile("compile_commands.json"):
@@ -321,6 +327,6 @@ if __name__ == "__main__":
         shutil.rmtree("src", ignore_errors=True)
 
     if args.target:
-        split_binaries(args.target)
+        split_binaries(args.target, args.no_short_loop_workaround)
     else:
-        split_binaries()
+        split_binaries([], args.no_short_loop_workaround)

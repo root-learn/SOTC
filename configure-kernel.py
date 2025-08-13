@@ -25,7 +25,7 @@ TOOLS_DIR = ROOT / "tools"
 
 XFF_FILE = "iso/KERNEL.XFF"
 
-YAML_FILE = "config/kernel.yaml"
+YAML_FILE = "config/KERNEL.XFF.yaml"
 BASENAME = "KERNEL.XFF"
 LD_PATH = f"{BASENAME}.ld"
 ELF_PATH = f"build/{BASENAME}"
@@ -118,7 +118,7 @@ def build_stuff(linker_entries: List[LinkerEntry]):
 
     # Rules
     cross = "mips-linux-gnu-"
-    ld_args = "-EL -T config/kernel_undefined_syms_auto.txt -T config/kernel_undefined_funcs_auto.txt -Map $mapfile -r -T $in -o $out"
+    ld_args = "-EL -T config/KERNEL.XFF_undefined_syms_auto.txt -T config/KERNEL.XFF_undefined_funcs_auto.txt -Map $mapfile -r -T $in -o $out"
 
     ninja.rule(
         "as",
@@ -197,7 +197,7 @@ def build_stuff(linker_entries: List[LinkerEntry]):
     ninja.build(
         ELF_PATH + ".ok",
         "sha1sum",
-        "checksum-kernel.sha1",
+        "checksum-KERNEL.XFF.sha1",
         implicit=[ELF_PATH],
     )
 

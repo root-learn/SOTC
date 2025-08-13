@@ -15,9 +15,9 @@ options:
     reloc_addrs_path: config/kernel.relocs.txt
 
     create_undefined_funcs_auto: True
-    undefined_funcs_auto_path: config/kernel_undefined_funcs_auto.txt
+    undefined_funcs_auto_path: config/KERNEL.XFF_undefined_funcs_auto.txt
     create_undefined_syms_auto: True
-    undefined_syms_auto_path:  config/kernel_undefined_syms_auto.txt
+    undefined_syms_auto_path:  config/KERNEL.XFF_undefined_syms_auto.txt
 
     # compiler
     compiler: EEGCC

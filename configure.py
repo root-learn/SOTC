@@ -275,7 +275,7 @@ def split_binaries(targets=[]):
 
         build_stuff(target_file, linker_entries)
 
-        write_permuter_settings()
+        
 
 
 if __name__ == "__main__":
@@ -319,6 +319,7 @@ if __name__ == "__main__":
     else:
         split_binaries()
 
+    write_permuter_settings()
 
     if not args.no_short_loop_workaround:
         replace_instructions_with_opcodes(split.config["options"]["asm_path"])

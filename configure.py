@@ -19,12 +19,6 @@ from splat.segtypes.linker_entry import LinkerEntry
 ROOT = Path(__file__).parent
 TOOLS_DIR = ROOT / "tools"
 
-#BASENAME = "SCPS_150.97"
-
-
-
-
-
 COMMON_INCLUDES = "-Iinclude -I include/sdk/common -I include/sdk/ee -I include/sdk -I include/gcc"
 
 COMPILER = "ee-gcc2.96"
@@ -111,7 +105,7 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
 
     # Rules
     cross = "mips-linux-gnu-"
-    ld_args = "-EL -T config/SCPS_150.97_undefined_syms_auto.txt -T config/SCPS_150.97_undefined_funcs_auto.txt -T config/undefined_syms.txt -Map $mapfile -T $in -o $out"
+    ld_args = f"-EL -T config/{basename}_undefined_syms_auto.txt -T config/{basename}_undefined_funcs_auto.txt -T config/undefined_syms.txt -Map $mapfile -T $in -o $out"
 
     ninja.rule(
         "as",
@@ -207,7 +201,7 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
     ninja.build(
         elf_path + ".ok",
         "sha1sum",
-        "checksum-SCPS_150.97.sha1",
+        f"checksum-{basename}.sha1",
         implicit=[elf_path],
     )
 
@@ -252,7 +246,7 @@ def replace_instructions_with_opcodes(asm_folder: Path) -> None:
                 file.write(content)
 
 
-def split_binaries(targets=[], no_short_loop=False):
+def split_binaries(targets=[]):
     target_aliases = {
         "loader" : "SCPS_150.97", 
         "kernel" : "KERNEL.XFF"
@@ -282,12 +276,6 @@ def split_binaries(targets=[], no_short_loop=False):
         build_stuff(target_file, linker_entries)
 
         write_permuter_settings()
-
-        if not no_short_loop:
-            replace_instructions_with_opcodes(split.config["options"]["asm_path"])
-
-        if not os.path.isfile("compile_commands.json"):
-            exec_shell(["ninja", "-t", "compdb"], open("compile_commands.json", "w"))
 
 
 if __name__ == "__main__":
@@ -327,6 +315,13 @@ if __name__ == "__main__":
         shutil.rmtree("src", ignore_errors=True)
 
     if args.target:
-        split_binaries(args.target, args.no_short_loop_workaround)
+        split_binaries(args.target)
     else:
-        split_binaries([], args.no_short_loop_workaround)
+        split_binaries()
+
+
+    if not args.no_short_loop_workaround:
+        replace_instructions_with_opcodes(split.config["options"]["asm_path"])
+
+    if not os.path.isfile("compile_commands.json"):
+        exec_shell(["ninja", "-t", "compdb"], open("compile_commands.json", "w"))

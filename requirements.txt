@@ -1,6 +1,6 @@
-spimdisasm
+spimdisasm==1.35.0
 rabbitizer
-splat64[mips]>=0.33.0,<1.0.0
+splat64[mips]==0.34.0
 tqdm
 ninja_syntax
 mapfile_parser

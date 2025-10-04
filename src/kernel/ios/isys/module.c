@@ -1,6 +1,6 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_400199B0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_400199B0);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_40019A00);
 
@@ -74,9 +74,9 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", GetExecModuleSize);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", getModuleSize);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C220);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C220);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C248);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C248);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", isysGetUndefModuleObjNum);
 
@@ -84,17 +84,17 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", isysGetSymdefModuleObjNum
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C350);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C3B0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C3B0);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C3F8);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C3F8);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C440);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C440);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C468);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C4F8);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C4F8);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", D_4001C5E8);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", func_4001C5E8);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/isys/module", isysResolveAllModuleObjOfGroup);
 

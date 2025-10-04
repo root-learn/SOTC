@@ -64,6 +64,8 @@ KERNEL.XFF.*
 /asm
 /assets
 /build
+/.python3
+/target
 
 /tools/cc/*
 

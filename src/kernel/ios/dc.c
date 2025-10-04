@@ -34,10 +34,10 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/dc", iosInitDC);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/dc", iosGetDCGroup);
 
-void D_40024A30(void) {
+void func_40024A30(void) {
 }
 
-void D_40024A38(void) {
+void func_40024A38(void) {
 }
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/dc", iosSetDCWithClear);

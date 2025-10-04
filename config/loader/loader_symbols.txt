@@ -6,6 +6,8 @@ D_20000050                                       = 0x20000050; // ignore:true
 D_20000140                                       = 0x20000140; // ignore:true
 D_20000150                                       = 0x20000150; // ignore:true
 D_20000060                                       = 0x20000060; // ignore:true
+D_FFFF                                           = 0x0000ffff; // ignore:true
+D_FFFFF                                          = 0x000fffff; // ignore:true
 
 // linker symbols
 _stack                                           = 0x01FE0000; // type:label

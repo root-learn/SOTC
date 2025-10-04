@@ -8,4 +8,4 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/timer", iosGetClock);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/timer", iosGetClockSecond);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/timer", D_40012A78);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/timer", func_40012A78);

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!./.python3/bin/python3
 
 import argparse
 import os
@@ -25,12 +25,12 @@ TOOLS_DIR = ROOT / "tools"
 
 XFF_FILE = "iso/KERNEL.XFF"
 
-YAML_FILE = "config/kernel.yaml"
+YAML_FILE = "config/kernel/kernel.yaml"
 BASENAME = "KERNEL.XFF"
 LD_PATH = f"{BASENAME}.ld"
-ELF_PATH = f"build/{BASENAME}"
-MAP_PATH = f"build/{BASENAME}.map"
-PRE_ELF_PATH = f"build/{BASENAME}.elf"
+ELF_PATH = f"build/kernel/{BASENAME}"
+MAP_PATH = f"build/kernel/{BASENAME}.map"
+PRE_ELF_PATH = f"build/kernel/{BASENAME}.elf"
 
 COMMON_INCLUDES = "-Iinclude -I include/sdk/ee -I include/sdk -I include/gcc"
 
@@ -38,7 +38,7 @@ COMPILER = "ee-gcc2.96"
 GAME_CC_DIR = f"{TOOLS_DIR}/cc/{COMPILER}/bin"
 CUSTOM_SPECS_FILE = f"{TOOLS_DIR}/cc/{COMPILER}/lib/regnames.specs"
 
-GAME_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} -O2 -g2 $regnames"
+GAME_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} -O2 -g2 -G0 $regnames"
 
 # Custom spec rule that invokes the preprocessor before assembling
 # avoids us having to manually pipe each step and just use GCC
@@ -67,16 +67,16 @@ def clean():
         os.remove(".splache")
     if os.path.exists(CUSTOM_SPECS_FILE):
         os.remove(CUSTOM_SPECS_FILE)
-    shutil.rmtree("asm", ignore_errors=True)
-    shutil.rmtree("assets", ignore_errors=True)
-    shutil.rmtree("build", ignore_errors=True)
+    shutil.rmtree("asm/kernel", ignore_errors=True)
+    shutil.rmtree("assets/kernel", ignore_errors=True)
+    shutil.rmtree("build/kernel", ignore_errors=True)
 
 
 def write_permuter_settings():
     rel_cc_dir = Path(GAME_CC_DIR).relative_to(ROOT)
     with open("permuter_settings.toml", "w") as f:
         f.write(
-            f"""compiler_command = "{rel_cc_dir}/ee-gcc -c {COMMON_INCLUDES} -O2 -g2"
+            f"""compiler_command = "{rel_cc_dir}/ee-gcc -c {COMMON_INCLUDES} -O2 -G0 -g2"
 assembler_command = "mips-linux-gnu-as -march=r5900 -Iinclude"
 compiler_type = "gcc"
 
@@ -118,7 +118,7 @@ def build_stuff(linker_entries: List[LinkerEntry]):
 
     # Rules
     cross = "mips-linux-gnu-"
-    ld_args = "-EL -T config/kernel_undefined_syms_auto.txt -T config/kernel_undefined_funcs_auto.txt -Map $mapfile -r -T $in -o $out"
+    ld_args = "-EL -T config/kernel/kernel_undefined_syms_auto.txt -T config/kernel/kernel_undefined_funcs_auto.txt -Map $mapfile -r -T $in -o $out"
 
     ninja.rule(
         "as",
@@ -147,7 +147,8 @@ def build_stuff(linker_entries: List[LinkerEntry]):
     ninja.rule(
         "elf",
         description="elf $out",
-        command=f"{cross}objcopy $in $out -O binary && python3 tools/fix_xff.py $out", # fix_xff applies the addends to bss symbols from the xff data. when all functions have been decomped this file can be commented out and the next line can be used
+        # fix_xff applies the addends to bss symbols from the xff data. when all functions have been decomped this file can be commented out and the next line can be used
+        command=f"{cross}objcopy $in $out -O binary && .python3/bin/python3 tools/fix_xff.py $out",
         #command=f"{cross}objcopy $in $out -O binary",
     )
 
@@ -258,15 +259,22 @@ if __name__ == "__main__":
         help="Do not replace branch instructions with raw opcodes for functions that trigger the short loop bug",
         action="store_true",
     )
+    parser.add_argument(
+        "-r",
+        "--rescan",
+        help="Rescans the XFF file for reallocations",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     if args.clean:
         clean()
 
     if args.cleansrc:
-        shutil.rmtree("src", ignore_errors=True)
+        shutil.rmtree("src/kernel", ignore_errors=True)
 
-#    parse_xff_relocs.main(XFF_FILE)
+    if args.rescan:
+        parse_xff_relocs.main(XFF_FILE)
 
     split.main([Path(YAML_FILE)], modes="all", verbose=False)
 

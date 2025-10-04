@@ -22,4 +22,4 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/mc", iosMcUnformat);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/mc", iosMcGetDir);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/mc", D_400167B0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/mc", func_400167B0);

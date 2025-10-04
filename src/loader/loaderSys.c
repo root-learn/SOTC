@@ -532,7 +532,46 @@ void LoaderSysJumpRecoverPointNoStateSetting(char *format, ...)
     func_00100A58();
 }
 
+
 INCLUDE_ASM("asm/loader/nonmatchings/loaderSys", LoaderSysJumpRecoverPoint);
+
+// Refuses to get the label D_00100CD0 address, instead it gets the address of the LoaderSysJumpRecoverPoint function. (only a 1 byte difference in the output file from target)
+// Matched code from Mc-Muffin - https://decomp.me/scratch/cbwrn
+/*extern unk_00131E80_s D_00131E80[];
+void LoaderSysJumpRecoverPoint(const char* format, ...)
+{
+    va_list args;
+    register s32 gp asm("gp");
+    register s32 sp asm("sp");
+    register s32 ra asm("ra");
+    s32 _ra;
+    s32 i;
+    void* lbl;
+    
+    gp = (s32)&_gp;
+    
+D_00100CD0:;
+    LoaderSysExecuteRecoveryFirstProcess();
+    
+    va_start(args, format);
+    vsprintf(D_0013B4C8, format, args);
+    va_end(args);
+
+    lbl = &&D_00100CD0;
+    _ra = ra;
+
+    for(i = 0; i < 64; i++) {
+        D_00131E80[i].unk4 = 0;
+    }
+
+    D_00131E80[46].unk4 = (s32)lbl;
+    D_00131E80[31].unk4 = _ra;
+    D_00131E80[29].unk4 = sp;
+    
+    func_00100A58();
+}*/
+
+
 
 void func_00101AA0(void)
 {

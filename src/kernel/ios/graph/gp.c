@@ -36,13 +36,13 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", iosSetVSchedulerFunc);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", iosWaitGPFinish);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", D_40028600);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", func_40028600);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", iStart);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", iFinish);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", D_400286E8);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", func_400286E8);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/graph/gp", gsRegBegin);
 

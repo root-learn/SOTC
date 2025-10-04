@@ -1,6 +1,6 @@
 #include "common.h"
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", D_4002C8F0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", func_4002C8F0);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", getVIntrCnt);
 
@@ -26,10 +26,10 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", vschedSetNextFrameForceGarbage)
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", GetGarbageTime);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", D_4002CD88);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", func_4002CD88);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", D_4002CDB0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", func_4002CDB0);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", D_4002CE70);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", func_4002CE70);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", D_4002CEA0);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/sched", func_4002CEA0);

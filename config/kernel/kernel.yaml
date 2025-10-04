@@ -3,21 +3,25 @@ options:
     # paths
     basename: KERNEL.XFF
     target_path: iso/KERNEL.XFF
-    base_path: ..
+    base_path: ../..
 
     asm_path: asm/kernel
+    asset_path: assets/kernel
     src_path: src/kernel
-    build_path: build
+    build_path: build/kernel
 
     symbol_addrs_path:
-        - config/kernel.symbols.txt
-        - config/kernel.ignore.symbols.txt
-    reloc_addrs_path: config/kernel.relocs.txt
-
+        - config/kernel/kernel.symbols.txt
+        - config/kernel/kernel.ignore.symbols.txt
+    reloc_addrs_path: config/kernel/kernel.relocs.txt
+    
+    ld_bss_contains_common: True
+    ld_bss_is_noload: True
+    
     create_undefined_funcs_auto: True
-    undefined_funcs_auto_path: config/kernel_undefined_funcs_auto.txt
+    undefined_funcs_auto_path: config/kernel/kernel_undefined_funcs_auto.txt
     create_undefined_syms_auto: True
-    undefined_syms_auto_path:  config/kernel_undefined_syms_auto.txt
+    undefined_syms_auto_path:  config/kernel/kernel_undefined_syms_auto.txt
 
     # compiler
     compiler: EEGCC
@@ -41,16 +45,16 @@ segments:
       start: 0x0
       vram: 0x40010000
       size: 0x21a0
-      align: 0
-      subalign: 0
+      align: 1
+      subalign: 1
 
-    - name: main
+    - name: text
       type: code
       start: 0x21A0
       vram: 0x400121A0
       bss_size: 0xa24ec
-      subalign: 0
-      align: 0
+      subalign: 8
+      align: 8
       subsegments:
         # file data
         - [ 0x21A0, c, ios/assert ] # _iosAssert
@@ -1006,7 +1010,16 @@ segments:
         - [ 0x35338, asm, sdk/sceCdStatus ] # sceCdStatus
         - [ 0x353F0, asm, sdk/sceCdReadClock ] # sceCdReadClock
         
-
+        # bss
+        - { type: bss, vram: 0x40073bc0, name: bss, size: 0xa24ec } # set to the end of the file, aligned by 64 bytes
+        
+    - name: data
+      type: data
+      start: 0x354b0
+      vram: 0x400454b0
+      subalign: 16
+      align: 16
+      subsegments:
         # data
         - [ 0x354b0, data, ios/cd ]
         - [ 0x354b8, data, ios/timer ]
@@ -1078,10 +1091,44 @@ segments:
         - [ 0x36398, data, Sg2/slot ]
         - [ 0x363d8, data, Sg2/smfp ]
         
-        # rodata
-        - { start: 0x36430, type: rodata, vram: 0x40046430, size: 0x3637 }
-        # bss
-        - { type: bss, vram: 0x40073bc0, name: bss } # set to the end of the file, aligned by 64 bytes
+    - name: rodata
+      type: rodata
+      start: 0x36430
+      vram: 0x40046430
+      subalign: 8
+      align: 8
+      subsegments:
+        - [ 0x36430, rodata, ios/assert ]
+        - [ 0x36460, rodata, ios/cd ]
+        - [ 0x36488, rodata, ios/system ]
+        - [ 0x365b8, rodata, ios/memory ]
+        - [ 0x36b08, rodata, ios/mc ]
+        - [ 0x36c40, rodata, ios/message ]
+        - [ 0x36c80, rodata, ios/net ]
+        - [ 0x36cc0, rodata, ios/thread ]
+        - [ 0x36d88, rodata, ios/kernel ]
+        - [ 0x36ec0, rodata, ios/isys/module ]
+        - [ 0x37550, rodata, ios/math/mvec ]
+        - [ 0x37560, rodata, ios/math/quat ]
+        - [ 0x37580, rodata, ios/math/trig ]
+        - [ 0x37590, rodata, ios/math/vector ]
+        - [ 0x375c0, rodata, ios/dl ]
+        - [ 0x37628, rodata, ios/graph/gs ]
+        - [ 0x38160, rodata, ios/graph/gp ]
+        - [ 0x38218, rodata, ios/isys/obj ]
+        - [ 0x389d0, rodata, ios/letter ]
+        - [ 0x38ac0, rodata, ios/subthread ]
+        - [ 0x38f20, rodata, ios/snd ]
+        - [ 0x38f98, rodata, ios/hash ]
+        - [ 0x38fd0, rodata, Sg2/mod ]
+        - [ 0x39200, rodata, Sg2/sep ]
+        - [ 0x39260, rodata, Sg2/slot ]
+        - [ 0x39278, rodata, Sg2/smfp ]
+        - [ 0x393b0, rodata, Sg2/iir ]
+        
+        - [ 0x393c8, rodata, sdk ]
+        
+        
 
 
     - name: xff_footer
@@ -1089,7 +1136,7 @@ segments:
       start: 0x39a68
       vram: 0x40049a68
       size: 0x2a120
-      align: 0
-      subalign: 0
+      align: 1
+      subalign: 1
       
     - [0x63B88]

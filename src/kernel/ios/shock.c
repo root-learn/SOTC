@@ -22,8 +22,8 @@ INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", Shock_Decode);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", Shock_SetMotor);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", D_40019958);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", func_40019958);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", D_40019960);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", func_40019960);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", D_400199A8);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/shock", func_400199A8);

@@ -4,19 +4,20 @@ options:
     # paths
     basename: SCPS_150.97
     target_path: iso/SCPS_150.97
-    base_path: ..
+    base_path: ../..
     
     asm_path: asm/loader
+    asset_path: assets/loader
     src_path: src/loader
-    build_path: build
+    build_path: build/loader
     
     extensions_path: tools/splat_ext
-    symbol_addrs_path: config/loader_symbols.txt
+    symbol_addrs_path: config/loader/loader_symbols.txt
 
     create_undefined_funcs_auto: True
-    undefined_funcs_auto_path: config/SCPS_150.97_undefined_funcs_auto.txt
+    undefined_funcs_auto_path: config/loader/SCPS_150.97_undefined_funcs_auto.txt
     create_undefined_syms_auto: True
-    undefined_syms_auto_path:  config/SCPS_150.97_undefined_syms_auto.txt
+    undefined_syms_auto_path:  config/loader/SCPS_150.97_undefined_syms_auto.txt
     
     # compiler 
     compiler: EEGCC

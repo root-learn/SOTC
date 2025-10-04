@@ -2,7 +2,7 @@
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/thread", iosCreateThread);
 
-INCLUDE_ASM("asm/kernel/nonmatchings/ios/thread", D_40018530);
+INCLUDE_ASM("asm/kernel/nonmatchings/ios/thread", func_40018530);
 
 INCLUDE_ASM("asm/kernel/nonmatchings/ios/thread", iosInitThreadSystem);
 

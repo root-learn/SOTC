@@ -1,4 +1,4 @@
-#!./.python3/bin/python3
+#!./python3/bin/python3
 
 import argparse
 import os
@@ -9,8 +9,6 @@ import re
 
 from pathlib import Path
 from typing import Dict, List, Set, Union
-
-#from fix_gp import main as fix_gp_main
 
 import ninja_syntax
 
@@ -23,22 +21,13 @@ from splat.segtypes.linker_entry import LinkerEntry
 ROOT = Path(__file__).parent
 TOOLS_DIR = ROOT / "tools"
 
-XFF_FILE = "iso/KERNEL.XFF"
-
-YAML_FILE = "config/KERNEL.XFF/KERNEL.XFF.yaml"
-BASENAME = "KERNEL.XFF"
-LD_PATH = f"{BASENAME}.ld"
-ELF_PATH = f"build/KERNEL.XFF/{BASENAME}"
-MAP_PATH = f"build/KERNEL.XFF/{BASENAME}.map"
-PRE_ELF_PATH = f"build/KERNEL.XFF/{BASENAME}.elf"
-
-COMMON_INCLUDES = "-Iinclude -I include/sdk/ee -I include/sdk -I include/gcc"
+COMMON_INCLUDES = "-Iinclude -I include/sdk/common -I include/sdk/ee -I include/sdk -I include/gcc"
 
 COMPILER = "ee-gcc2.96"
 GAME_CC_DIR = f"{TOOLS_DIR}/cc/{COMPILER}/bin"
 CUSTOM_SPECS_FILE = f"{TOOLS_DIR}/cc/{COMPILER}/lib/regnames.specs"
 
-GAME_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} -O2 -g2 -G0 $regnames"
+GAME_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} $optlevel -g2 $regnames"
 
 # Custom spec rule that invokes the preprocessor before assembling
 # avoids us having to manually pipe each step and just use GCC
@@ -67,16 +56,16 @@ def clean():
         os.remove(".splache")
     if os.path.exists(CUSTOM_SPECS_FILE):
         os.remove(CUSTOM_SPECS_FILE)
-    shutil.rmtree("asm/KERNEL.XFF", ignore_errors=True)
-    shutil.rmtree("assets/KERNEL.XFF", ignore_errors=True)
-    shutil.rmtree("build/KERNEL.XFF", ignore_errors=True)
+    shutil.rmtree("asm", ignore_errors=True)
+    shutil.rmtree("assets", ignore_errors=True)
+    shutil.rmtree("build", ignore_errors=True)
 
 
 def write_permuter_settings():
     rel_cc_dir = Path(GAME_CC_DIR).relative_to(ROOT)
     with open("permuter_settings.toml", "w") as f:
         f.write(
-            f"""compiler_command = "{rel_cc_dir}/ee-gcc -c {COMMON_INCLUDES} -O2 -G0 -g2"
+            f"""compiler_command = "{rel_cc_dir}/ee-gcc -c {COMMON_INCLUDES} -O2 -g2"
 assembler_command = "mips-linux-gnu-as -march=r5900 -Iinclude"
 compiler_type = "gcc"
 
@@ -88,7 +77,7 @@ compiler_type = "gcc"
         )
 
 
-def build_stuff(linker_entries: List[LinkerEntry]):
+def build_stuff(basename, linker_entries: List[LinkerEntry]):
     built_objects: Set[Path] = set()
 
     def build(
@@ -118,12 +107,12 @@ def build_stuff(linker_entries: List[LinkerEntry]):
 
     # Rules
     cross = "mips-linux-gnu-"
-    ld_args = "-EL -T config/KERNEL.XFF/KERNEL.XFF_undefined_syms_auto.txt -T config/KERNEL.XFF/KERNEL.XFF_undefined_funcs_auto.txt -Map $mapfile -r -T $in -o $out"
+    ld_args = f"-EL -T config/{basename}_undefined_syms_auto.txt -T config/{basename}_undefined_funcs_auto.txt -T config/undefined_syms.txt -Map $mapfile -T $in -o $out"
 
     ninja.rule(
         "as",
         description="as $in",
-        command=f"cpp {COMMON_INCLUDES} $in | iconv -f=UTF-8 -t=EUC-JP $in | {cross}as -no-pad-sections -EL -march=5900 -mabi=eabi -Iinclude -o $out",
+        command=f"cpp {COMMON_INCLUDES} $in | {cross}as -no-pad-sections -EL -march=5900 -mabi=eabi -Iinclude -o $out && python3 tools/elf_patcher.py $out gas $override",
     )
 
     ninja.rule(
@@ -147,9 +136,7 @@ def build_stuff(linker_entries: List[LinkerEntry]):
     ninja.rule(
         "elf",
         description="elf $out",
-        # fix_xff applies the addends to bss symbols from the xff data. when all functions have been decomped this file can be commented out and the next line can be used
-        command=f"{cross}objcopy $in $out -O binary && .python3/bin/python3 tools/fix_xff.py $out",
-        #command=f"{cross}objcopy $in $out -O binary",
+        command=f"{cross}objcopy $in $out -O binary",
     )
 
     for entry in linker_entries:
@@ -161,10 +148,17 @@ def build_stuff(linker_entries: List[LinkerEntry]):
         if entry.object_path is None:
             continue
 
+        if entry.object_path.is_relative_to(Path("build/asm/loader/sdk")):
+            override = "--section-align .text:0x4"
+        elif entry.object_path.is_relative_to(Path("build/asm/loader/data/section")):
+            override = "--section-align .data:0x4"
+        else:
+            override = ""
+
         if isinstance(seg, splat.segtypes.common.asm.CommonSegAsm) or isinstance(
             seg, splat.segtypes.common.data.CommonSegData
         ):
-            build(entry.object_path, entry.src_paths, "as")
+            build(entry.object_path, entry.src_paths, "as", variables={"override": override})
         elif isinstance(seg, splat.segtypes.common.cpp.CommonSegCpp):
             build(entry.object_path, entry.src_paths, "cpp")
         elif isinstance(seg, splat.segtypes.common.c.CommonSegC):
@@ -172,45 +166,60 @@ def build_stuff(linker_entries: List[LinkerEntry]):
                 regnames = "--specs=regnames.specs"
             else:
                 regnames = ""
-            build(entry.object_path, entry.src_paths, "cc", variables={"regnames": regnames})
-        elif isinstance(seg, splat.segtypes.common.databin.CommonSegDatabin
-            ) or isinstance(seg, splat.segtypes.common.rodatabin.CommonSegRodatabin
-            ) or isinstance(seg, splat.segtypes.common.textbin.CommonSegTextbin):
-            build(entry.object_path, entry.src_paths, "as")
+
+            if len(seg.yaml) < 4:
+                opt = "-O2"
+            else:
+                opt = seg.yaml[3]
+            build(entry.object_path, entry.src_paths, "cc", variables={"regnames": regnames, "optlevel": opt})
+        elif isinstance(
+            seg, splat.segtypes.common.databin.CommonSegDatabin
+        ) or isinstance(seg, splat.segtypes.common.rodatabin.CommonSegRodatabin):
+            build(entry.object_path, entry.src_paths, "as", variables={"override": override})
         else:
             print(f"ERROR: Unsupported build segment type {seg.type}")
             sys.exit(1)
 
+
+    elf_path = f"build/{basename}"
+    pre_elf_path = f"build/{basename}.elf"
+    ld_path = f"{basename}.ld"
+    map_path = f"build/{basename}.map"
+
     ninja.build(
-        PRE_ELF_PATH,
+        pre_elf_path,
         "ld",
-        LD_PATH,
+        ld_path,
         implicit=[str(obj) for obj in built_objects],
-        variables={"mapfile": MAP_PATH},
+        variables={"mapfile": map_path},
     )
 
     ninja.build(
-        ELF_PATH,
+        elf_path,
         "elf",
-        PRE_ELF_PATH,
+        pre_elf_path,
     )
 
     ninja.build(
-        ELF_PATH + ".ok",
+        elf_path + ".ok",
         "sha1sum",
-        "checksum-KERNEL.XFF.sha1",
-        implicit=[ELF_PATH],
+        f"checksum-{basename}.sha1",
+        implicit=[elf_path],
     )
 
 
 # Pattern to workaround unintended nops around loops
 COMMENT_PART = r"\/\* (.+) ([0-9A-Z]{2})([0-9A-Z]{2})([0-9A-Z]{2})([0-9A-Z]{2}) \*\/"
 INSTRUCTION_PART = r"(\b(bne|bnel|beq|beql|bnez|bnezl|beqzl|bgez|bgezl|bgtz|bgtzl|blez|blezl|bltz|bltzl|b)\b.*)"
-#OPCODE_PATTERN = re.compile(f"{COMMENT_PART}  {INSTRUCTION_PART}")
+OPCODE_PATTERN = re.compile(f"{COMMENT_PART}  {INSTRUCTION_PART}")
 
 PROBLEMATIC_FUNCS = set(
     [
-        
+        "OutputLinkerScriptFile",
+        "LoaderSysResetSystem",
+        "func_00105A60",
+        "_putString",
+        "InitDisp",
     ]
 )
 
@@ -239,6 +248,41 @@ def replace_instructions_with_opcodes(asm_folder: Path) -> None:
                 file.write(content)
 
 
+def split_binaries(rescan, targets=[]):
+    target_aliases = {
+        "loader" : "SCPS_150.97", 
+        "kernel" : "KERNEL.XFF"
+        }
+    
+    target_files = []
+    
+    if not targets:
+        target_files = list(target_aliases.values())
+    else:
+        for target in targets:
+            if target not in target_aliases.keys():
+                print(f"Error: Unrecognized target. Valid targets: {list(target_aliases.keys())}." )
+                return
+            target_files.append(target_aliases.get(target))
+
+    for target_file in target_files:
+
+        if rescan:
+            parse_xff_relocs.main(XFF_FILE)
+
+        yaml_file = f"config/{target_file}.yaml"
+
+        split.main([Path(yaml_file)], modes="all", verbose=False)
+
+        linker_entries = split.linker_writer.entries
+
+        create_custom_specs()
+
+        build_stuff(target_file, linker_entries)
+
+        
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Configure the project")
     parser.add_argument(
@@ -260,9 +304,17 @@ if __name__ == "__main__":
         action="store_true",
     )
     parser.add_argument(
+        "-t",
+        "--target",
+        help="Choose one or more target binaries",
+        action="extend",
+        nargs="+",
+        type=str
+    )
+    parser.add_argument(
         "-r",
         "--rescan",
-        help="Rescans the XFF file for reallocations",
+        help="Rescans the target XFF file for reallocations",
         action="store_true",
     )
     args = parser.parse_args()
@@ -271,26 +323,17 @@ if __name__ == "__main__":
         clean()
 
     if args.cleansrc:
-        shutil.rmtree("src/kernel", ignore_errors=True)
+        shutil.rmtree("src", ignore_errors=True)
 
-    if args.rescan:
-        parse_xff_relocs.main(XFF_FILE)
-
-    split.main([Path(YAML_FILE)], modes="all", verbose=False)
-
-    linker_entries = split.linker_writer.entries
-
-    create_custom_specs()
-
-    build_stuff(linker_entries)
+    if args.target:
+        split_binaries(args.rescan, args.target)
+    else:
+        split_binaries(args.rescan)
 
     write_permuter_settings()
 
-#    if not split.config["options"]["use_gp_rel_macro_nonmatching"]:
-#        fix_gp_main()
-
-#    if not args.no_short_loop_workaround:
-#        replace_instructions_with_opcodes(split.config["options"]["asm_path"])
+    if not args.no_short_loop_workaround:
+        replace_instructions_with_opcodes(split.config["options"]["asm_path"])
 
     if not os.path.isfile("compile_commands.json"):
         exec_shell(["ninja", "-t", "compdb"], open("compile_commands.json", "w"))

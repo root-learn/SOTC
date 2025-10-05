@@ -5,23 +5,23 @@ options:
     target_path: iso/KERNEL.XFF
     base_path: ../..
 
-    asm_path: asm/kernel
-    asset_path: assets/kernel
-    src_path: src/kernel
-    build_path: build/kernel
+    asm_path: asm/KERNEL.XFF
+    asset_path: assets/KERNEL.XFF
+    src_path: src/KERNEL.XFF
+    build_path: build/KERNEL.XFF
 
     symbol_addrs_path:
-        - config/kernel/kernel.symbols.txt
-        - config/kernel/kernel.ignore.symbols.txt
-    reloc_addrs_path: config/kernel/kernel.relocs.txt
+        - config/KERNEL.XFF/KERNEL.XFF_symbols.txt
+        - config/KERNEL.XFF/KERNEL.XFF_ignore_symbols.txt
+    reloc_addrs_path: config/KERNEL.XFF/KERNEL.XFF_relocs.txt
     
     ld_bss_contains_common: True
     ld_bss_is_noload: True
     
     create_undefined_funcs_auto: True
-    undefined_funcs_auto_path: config/kernel/kernel_undefined_funcs_auto.txt
+    undefined_funcs_auto_path: config/KERNEL.XFF/KERNEL.XFF_undefined_funcs_auto.txt
     create_undefined_syms_auto: True
-    undefined_syms_auto_path:  config/kernel/kernel_undefined_syms_auto.txt
+    undefined_syms_auto_path:  config/KERNEL.XFF/KERNEL.XFF_undefined_syms_auto.txt
 
     # compiler
     compiler: EEGCC

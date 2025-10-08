@@ -148,7 +148,7 @@ def build_stuff(linker_entries: List[LinkerEntry]):
         "elf",
         description="elf $out",
         # fix_xff applies the addends to bss symbols from the xff data. when all functions have been decomped this file can be commented out and the next line can be used
-        command=f"{cross}objcopy $in $out -O binary && .python3/bin/python3 tools/fix_xff.py $out",
+        command=f"{cross}objcopy $in $out -O binary && python3 tools/fix_xff.py $out",
         #command=f"{cross}objcopy $in $out -O binary",
     )
 

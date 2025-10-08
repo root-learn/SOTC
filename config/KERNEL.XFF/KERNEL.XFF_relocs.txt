@@ -38,7 +38,7 @@ rom:0x2368 symbol:D_40073BD4 reloc:MIPS_LO16
 rom:0x2374 symbol:D_400454B4 reloc:MIPS_LO16
 rom:0x2388 symbol:DelayThread reloc:MIPS_26
 rom:0x2390 symbol:sceCdDiskReady reloc:MIPS_26
-rom:0x23A4 symbol:D_40073BD8 reloc:MIPS_HI16
+rom:0x23A4 symbol:D_40073BCC reloc:MIPS_HI16
 rom:0x23A8 symbol:D_40073BDC reloc:MIPS_HI16
 rom:0x23B0 symbol:D_40073BDC reloc:MIPS_LO16
 rom:0x23B8 symbol:LoaderSysFSeek64 reloc:MIPS_26
@@ -67,10 +67,10 @@ rom:0x24EC symbol:D_40073BD4 reloc:MIPS_LO16
 rom:0x24F8 symbol:D_400454B4 reloc:MIPS_LO16
 rom:0x250C symbol:DelayThread reloc:MIPS_26
 rom:0x2514 symbol:sceCdDiskReady reloc:MIPS_26
-rom:0x2520 symbol:D_40073BD4 reloc:MIPS_HI16
+rom:0x2520 symbol:D_40073BCC reloc:MIPS_HI16
 rom:0x2530 symbol:sceCdSync reloc:MIPS_26
 rom:0x2538 symbol:sceCdGetError reloc:MIPS_26
-rom:0x2544 symbol:D_40073BD4 reloc:MIPS_HI16
+rom:0x2544 symbol:D_40073BCC reloc:MIPS_HI16
 rom:0x2550 symbol:D_40073BDC reloc:MIPS_HI16
 rom:0x2558 symbol:D_40073BDC reloc:MIPS_LO16
 rom:0x2564 symbol:LoaderSysFSeek64 reloc:MIPS_26
@@ -833,7 +833,7 @@ rom:0x838C symbol:iosSystemSema reloc:MIPS_LO16
 rom:0x83AC symbol:WaitSema reloc:MIPS_26
 rom:0x83B4 symbol:D_4007F160 reloc:MIPS_HI16
 rom:0x83B8 symbol:D_4007F160 reloc:MIPS_LO16
-rom:0x83C4 symbol:D_40045814 reloc:MIPS_HI16
+rom:0x83C4 symbol:D_400454B0 reloc:MIPS_HI16
 rom:0x83DC symbol:D_4007F164 reloc:MIPS_HI16
 rom:0x83E0 symbol:D_4007F164 reloc:MIPS_LO16
 rom:0x8410 symbol:D_40045814 reloc:MIPS_HI16
@@ -961,7 +961,7 @@ rom:0x8B14 symbol:D_40081170 reloc:MIPS_LO16
 rom:0x8B28 symbol:WakeupThread reloc:MIPS_26
 rom:0x8B5C symbol:__loader_version_id__ reloc:MIPS_HI16
 rom:0x8B64 symbol:__loader_version_id__ reloc:MIPS_LO16
-rom:0x8B70 symbol:D_40046D88 reloc:MIPS_HI16
+rom:0x8B70 symbol:D_40046EB8 reloc:MIPS_HI16
 rom:0x8B74 symbol:D_40046D88 reloc:MIPS_HI16
 rom:0x8B7C symbol:D_40046D88 reloc:MIPS_LO16
 rom:0x8B80 symbol:D_40046DD8 reloc:MIPS_HI16
@@ -1546,7 +1546,7 @@ rom:0xD014 symbol:isysGroupForFirst reloc:MIPS_26
 rom:0xD028 symbol:isysGroupForNext reloc:MIPS_26
 rom:0xD048 symbol:func_4001CDD8 reloc:MIPS_26
 rom:0xD068 symbol:isysGroupForExit reloc:MIPS_26
-rom:0xD07C symbol:D_40047170 reloc:MIPS_HI16
+rom:0xD07C symbol:D_40047308 reloc:MIPS_HI16
 rom:0xD080 symbol:D_40047170 reloc:MIPS_HI16
 rom:0xD088 symbol:LoaderSysPrintf reloc:MIPS_26
 rom:0xD08C symbol:D_40047170 reloc:MIPS_LO16
@@ -1928,7 +1928,7 @@ rom:0x13C80 symbol:cosf reloc:MIPS_26
 rom:0x13CA0 symbol:D_400458F4 reloc:MIPS_LO16
 rom:0x13F0C symbol:ZUnitVectorInv reloc:MIPS_HI16
 rom:0x13F14 symbol:ZUnitVectorInv reloc:MIPS_LO16
-rom:0x13F2C symbol:ZUnitVector reloc:MIPS_HI16
+rom:0x13F2C symbol:YUnitVector reloc:MIPS_HI16
 rom:0x13F30 symbol:ZUnitVector reloc:MIPS_HI16
 rom:0x13F38 symbol:ZUnitVector reloc:MIPS_LO16
 rom:0x13F40 symbol:YUnitVector reloc:MIPS_LO16
@@ -2211,14 +2211,14 @@ rom:0x15D5C symbol:D_400477D0 reloc:MIPS_HI16
 rom:0x15D60 symbol:LoaderSysPrintf reloc:MIPS_26
 rom:0x15D64 symbol:D_400477D0 reloc:MIPS_LO16
 rom:0x15D70 symbol:LoaderSysPrintf reloc:MIPS_26
-rom:0x15D88 symbol:D_400477F8 reloc:MIPS_HI16
+rom:0x15D88 symbol:D_40047888 reloc:MIPS_HI16
 rom:0x15D8C symbol:D_400477F8 reloc:MIPS_HI16
 rom:0x15D90 symbol:LoaderSysPrintf reloc:MIPS_26
 rom:0x15D94 symbol:D_400477F8 reloc:MIPS_LO16
 rom:0x15DB8 symbol:D_40047830 reloc:MIPS_HI16
 rom:0x15DC0 symbol:D_40047830 reloc:MIPS_LO16
 rom:0x15DC8 symbol:LoaderSysPrintf reloc:MIPS_26
-rom:0x15DD4 symbol:D_40047868 reloc:MIPS_HI16
+rom:0x15DD4 symbol:D_40047888 reloc:MIPS_HI16
 rom:0x15DD8 symbol:D_40047868 reloc:MIPS_HI16
 rom:0x15DE0 symbol:D_40047868 reloc:MIPS_LO16
 rom:0x15DE4 symbol:LoaderSysPrintf reloc:MIPS_26
@@ -4169,7 +4169,7 @@ rom:0x24678 symbol:D_40049040 reloc:MIPS_LO16
 rom:0x24690 symbol:D_40049060 reloc:MIPS_HI16
 rom:0x24698 symbol:strcat reloc:MIPS_26
 rom:0x2469C symbol:D_40049060 reloc:MIPS_LO16
-rom:0x246AC symbol:D_40049080 reloc:MIPS_HI16
+rom:0x246AC symbol:D_400490A8 reloc:MIPS_HI16
 rom:0x246B0 symbol:D_40049080 reloc:MIPS_HI16
 rom:0x246B8 symbol:strcat reloc:MIPS_26
 rom:0x246BC symbol:D_40049080 reloc:MIPS_LO16
@@ -4837,7 +4837,7 @@ rom:0x28070 symbol:D_40046368 reloc:MIPS_HI16
 rom:0x28074 symbol:D_4004636C reloc:MIPS_HI16
 rom:0x28078 symbol:D_40046370 reloc:MIPS_HI16
 rom:0x2807C symbol:D_40046370 reloc:MIPS_LO16
-rom:0x28088 symbol:D_40049208 reloc:MIPS_HI16
+rom:0x28088 symbol:D_40049230 reloc:MIPS_HI16
 rom:0x2808C symbol:D_40049208 reloc:MIPS_HI16
 rom:0x28090 symbol:D_40046368 reloc:MIPS_LO16
 rom:0x28094 symbol:D_4004636C reloc:MIPS_LO16
@@ -4895,7 +4895,7 @@ rom:0x2846C symbol:D_40111550 reloc:MIPS_LO16
 rom:0x284F0 symbol:D_40111654 reloc:MIPS_HI16
 rom:0x284F8 symbol:D_40111654 reloc:MIPS_LO16
 rom:0x28504 symbol:D_40111650 reloc:MIPS_HI16
-rom:0x2850C symbol:D_40111550 reloc:MIPS_HI16
+rom:0x2850C symbol:D_40111650 reloc:MIPS_HI16
 rom:0x28514 symbol:D_40111650 reloc:MIPS_LO16
 rom:0x2851C symbol:D_40111550 reloc:MIPS_HI16
 rom:0x28520 symbol:D_40111550 reloc:MIPS_LO16
@@ -4910,7 +4910,7 @@ rom:0x286BC symbol:__floatdidf reloc:MIPS_26
 rom:0x286C8 symbol:dpadd reloc:MIPS_26
 rom:0x28758 symbol:D_40111654 reloc:MIPS_HI16
 rom:0x28760 symbol:D_40111654 reloc:MIPS_LO16
-rom:0x2877C symbol:D_40111550 reloc:MIPS_HI16
+rom:0x2877C symbol:D_40111650 reloc:MIPS_HI16
 rom:0x28780 symbol:D_40111650 reloc:MIPS_HI16
 rom:0x28784 symbol:D_40111650 reloc:MIPS_LO16
 rom:0x2878C symbol:D_40111550 reloc:MIPS_HI16

@@ -158,10 +158,13 @@ bss_start = 0
 
 def extract_reloc_and_symbols(filename: Path):
     xff_name = filename.stem.lower()
-    relocs_output_file = Path("config") / f"{xff_name}/{xff_name}.relocs.txt"
-    symbols_output_file = Path("config") / f"{xff_name}/{xff_name}.symbols.txt"
+    relocs_output_file = Path("config") / f"{filename.name}/{filename.name}_relocs.txt"
+    symbols_output_file = Path("config") / f"{filename.name}/{filename.name}_symbols.txt"
+    manual_rels_file = Path("config") / f"{filename.name}/manual_rels.txt"
+    if not manual_rels_file.exists():
+        open(manual_rels_file, "w")
 
-    with open(filename, 'rb') as file, open(relocs_output_file, 'w') as relocs_out, open(symbols_output_file, 'w') as symbols_out:
+    with open(filename, 'rb') as file, open(manual_rels_file, "r") as rel_file, open(relocs_output_file, 'w') as relocs_out, open(symbols_output_file, 'w') as symbols_out:
         hdr = read_xffEntPntHdr(file)
 
         if hdr['ident'] != b'xff2':
@@ -211,6 +214,13 @@ def extract_reloc_and_symbols(filename: Path):
                 # Add symbol to the symbol table
                 symbol_table[VRAM + actual_address] = name
 
+
+        manual_rels = {}
+        for l in rel_file:
+            if l.strip() == "": continue
+            s = l.split(" ")
+            manual_rels[int(s[0].strip(), 16)] = s[1].strip()
+
         # Not all relocs resolve to a symbol, so we make a generic symbol in those instances
         # these generic symbols need to also be in symbol_addrs so we collect them here
         noname_syms = dict()
@@ -231,6 +241,7 @@ def extract_reloc_and_symbols(filename: Path):
                 rel['addend'], _ = read_xffRelocAddendEnt(file, inst_table_offset + j * 8)
                 # Get the section id for the relocation symbol
                 rel['sec'] = symbol_secs[rel['symIx']]
+                rel['file-addr'] = section_offsets[reloc_entry['sect']] + rel['addr']
                 rel_table.append(rel)
             # Sort the table by address
             rel_table.sort(key=sort_rel_addr)
@@ -270,95 +281,101 @@ def extract_reloc_and_symbols(filename: Path):
                         print("WRONG MIPS26!")
 
                 elif relType == RelocType.R_MIPS_HI16:
-                    _sym_name, sym_sect, sym_addr, sym_type = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx, section_names)
-                    lo_i = search_reloc_lo(rel_table, j)
-                    loAddend = rel_table[lo_i]['addend']
-                    
-                    # hi/lo pairs
-                    hi = (addend << 0x10) & 0xFFFF0000
-                    lo = sign_extend16(loAddend)
-                    
-                    # If the symbol already has a name, then we don't need to create one
-                    if not _sym_name.startswith("."):
-                        sym_name = _sym_name
-
-                    # No symbol, create one
+                    if addr+sect_offs in manual_rels:
+                        sym_name = manual_rels[addr+sect_offs]
                     else:
-                        _addr = VRAM + sym_addr + hi + lo + section_offsets[sym_sect]
-                        _addr &= 0xFFFFFFFF
+                        _sym_name, sym_sect, sym_addr, sym_type = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx, section_names)
+                        lo_i = search_reloc_lo(rel_table, j, file)
+                        loAddend = rel_table[lo_i]['addend']
+                        
+                        # hi/lo pairs
+                        hi = (addend << 0x10) & 0xFFFF0000
+                        lo = sign_extend16(loAddend)
+                        
+                        # If the symbol already has a name, then we don't need to create one
+                        if not _sym_name.startswith("."):
+                            sym_name = _sym_name
 
-                        if sym_type == 2:
-                            sym_name = symbol_table.get(_addr, f"func_{_addr:08X}")
-                        elif sym_type == 3:
-                            if _sym_name == ".text":
+                        # No symbol, create one
+                        else:
+                            _addr = VRAM + sym_addr + hi + lo + section_offsets[sym_sect]
+                            _addr &= 0xFFFFFFFF
+
+                            if sym_type == 2:
                                 sym_name = symbol_table.get(_addr, f"func_{_addr:08X}")
+                            elif sym_type == 3:
+                                if _sym_name == ".text":
+                                    sym_name = symbol_table.get(_addr, f"func_{_addr:08X}")
+                                else:
+                                    sym_name = symbol_table.get(_addr, f"D_{_addr:08X}")
                             else:
                                 sym_name = symbol_table.get(_addr, f"D_{_addr:08X}")
-                        else:
-                            sym_name = symbol_table.get(_addr, f"D_{_addr:08X}")
-                        
-                        if _addr not in symbol_table and _addr not in noname_syms:
-                            noname_syms[_addr] = sym_name
+                            
+                            if _addr not in symbol_table and _addr not in noname_syms:
+                                noname_syms[_addr] = sym_name
 
                 elif relType == RelocType.R_MIPS_LO16:
-                    _sym_name, sym_sect, sym_addr, sym_type = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx, section_names)
-                    hi_i = search_reloc_hi(rel_table, j)
-                    hiAddend = rel_table[hi_i]['addend']
-                    
-                    addr_hi, relType_hi, tgSymIx_hi = rel_table[hi_i]['addr'], rel_table[hi_i]['type'], rel_table[hi_i]['symIx']
-                    _sym_name_hi, sym_sect_hi, sym_addr_hi, sym_type_hi = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx_hi, section_names)
-                    
-                    _addr  = (VRAM + sign_extend16(addend) + sym_addr) + (hiAddend << 16)
-                    s_off = 0
-                    if _sym_name.startswith(".") or sym_sect < 0xfff1:
-                        s_off = section_offsets[sym_sect]
-                    
-                    _addr += s_off
-                    _addr &= 0xFFFFFFFF
-                    
-                    addend = 0
-                    
-                    # Symbol already has a name
-                    if not _sym_name.startswith("."):
-                        sym_name = _sym_name
-                        s_off_hi = 0
-                        if sym_sect_hi < 0xfff1:
-                            s_off_hi = section_offsets[sym_sect_hi]
-                        _addr_hi = (VRAM + s_off_hi + sym_addr_hi) & 0xFFFFFFFF
-                        addend = _addr - _addr_hi
-                    
-                    # No symbol, create one
+                    if addr+sect_offs in manual_rels:
+                        sym_name = manual_rels[addr+sect_offs]
                     else:
-                        if sym_sect != sym_sect_hi:
+                        _sym_name, sym_sect, sym_addr, sym_type = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx, section_names)
+                        hi_i = search_reloc_hi(rel_table, j)
+                        hiAddend = rel_table[hi_i]['addend']
+                        
+                        addr_hi, relType_hi, tgSymIx_hi = rel_table[hi_i]['addr'], rel_table[hi_i]['type'], rel_table[hi_i]['symIx']
+                        _sym_name_hi, sym_sect_hi, sym_addr_hi, sym_type_hi = get_symbol_info(file, hdr['symTab_Rel'], hdr['symTabStr_Rel'], tgSymIx_hi, section_names)
+                        
+                        _addr  = (VRAM + sign_extend16(addend) + sym_addr) + (hiAddend << 16)
+                        s_off = 0
+                        if _sym_name.startswith(".") or sym_sect < 0xfff1:
+                            s_off = section_offsets[sym_sect]
+                        
+                        _addr += s_off
+                        _addr &= 0xFFFFFFFF
+                        
+                        addend = 0
+                        
+                        # Symbol already has a name
+                        if not _sym_name.startswith("."):
+                            sym_name = _sym_name
                             s_off_hi = 0
                             if sym_sect_hi < 0xfff1:
                                 s_off_hi = section_offsets[sym_sect_hi]
                             _addr_hi = (VRAM + s_off_hi + sym_addr_hi) & 0xFFFFFFFF
                             addend = _addr - _addr_hi
                         
-                        if _addr in symbol_table:
-                            sym_name = symbol_table[_addr]
-                        elif sym_type == 2:
-                            sym_name = f"func_{_addr:08X}"
-                        elif sym_type == 3:
-                            if _sym_name == ".text":
+                        # No symbol, create one
+                        else:
+                            if sym_sect != sym_sect_hi:
+                                s_off_hi = 0
+                                if sym_sect_hi < 0xfff1:
+                                    s_off_hi = section_offsets[sym_sect_hi]
+                                _addr_hi = (VRAM + s_off_hi + sym_addr_hi) & 0xFFFFFFFF
+                                addend = _addr - _addr_hi
+                            
+                            if _addr in symbol_table:
+                                sym_name = symbol_table[_addr]
+                            elif sym_type == 2:
                                 sym_name = f"func_{_addr:08X}"
+                            elif sym_type == 3:
+                                if _sym_name == ".text":
+                                    sym_name = f"func_{_addr:08X}"
+                                else:
+                                    sym_name = f"D_{_addr:08X}"
                             else:
                                 sym_name = f"D_{_addr:08X}"
-                        else:
-                            sym_name = f"D_{_addr:08X}"
+                            
+                            
+                            if addend == 0 and _addr not in symbol_table and _addr not in noname_syms:
+                                noname_syms[_addr] = sym_name
                         
-                        
-                        if addend == 0 and _addr not in symbol_table and _addr not in noname_syms:
-                            noname_syms[_addr] = sym_name
-                    
-                    # Some relocations are offset into a symbol
-                    if addend != 0:
-                        if addend < 0:
-                            addend = abs(addend)
-                            sym_name = sym_name + f"-0x{addend:X}"
-                        else:
-                            sym_name = sym_name + f"+0x{addend:X}"
+                        # Some relocations are offset into a symbol
+                        if addend != 0:
+                            if addend < 0:
+                                addend = abs(addend)
+                                sym_name = sym_name + f"-0x{addend:X}"
+                            else:
+                                sym_name = sym_name + f"+0x{addend:X}"
 
                 else:
                     print(f"xff_parser: Unknown reloc type ({relType}) found at 0x{addr:04X}")
@@ -374,26 +391,87 @@ def extract_reloc_and_symbols(filename: Path):
 
 
 
-def search_reloc_lo(rel_table, index: int):
+instr_table = [
+    0x02, 0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17, 
+]
+regimm_instr_table = [
+    0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 
+]
+def check_for_branch(rel_table, index: int, file, after):
+    if after:
+        file.seek(rel_table[index]['file-addr'] + 4)
+    else:
+        file.seek(rel_table[index]['file-addr'] - 4)
+    instr = read_uint32(file)
+    if after:
+        branch = ((sign_extend16(instr & 0xffff) << 2) + rel_table[index]['addr'] + 8) & 0xffffffff
+    else:
+        branch = ((sign_extend16(instr & 0xffff) << 2) + rel_table[index]['addr']) & 0xffffffff
+
+    if instr >> 16 == 0x1000:
+        return branch
+    elif (instr >> 26 == 0x10 or instr >> 26 == 0x11) and instr >> 16 & 0x3ff in [0x100, 0x101, 0x102, 0x103]:
+        return branch
+    if instr >> 26 == 1:
+        if instr >> 26 in regimm_instr_table:
+            return branch
+    elif instr >> 26 in instr_table:
+        return branch
+    return -1
+
+def find_next_rel(rel_table, addr):
+    for i in range(len(rel_table)):
+        if rel_table[i]['addr'] >= addr:
+            return i
+    return -1
+
+
+
+def search_reloc_lo(rel_table, index: int, file):
     reg = (rel_table[index]['addend'] >> 16) & 0x1f
     sec = rel_table[index]['sec']
     sym = rel_table[index]['symIx']
     check_reg = True
     check_sym = True
     
+    start_index = index
+    addr = check_for_branch(rel_table, index, file, False)
+    if addr != -1:
+        new_index = find_next_rel(rel_table, addr)
+        if new_index != -1:
+            start_index = new_index
+    else:
+        start_index += 1
+    
     # Tries to find the corresponding lo reloc in 3 ways
     # 1: Looks for an identical match; symbol/section and register
     # 2: Tries just checking the symbol/section
     # 3: Tries just checking the register
     for t in range(3):
-        for i in range(index+1, len(rel_table)):
-            rel = rel_table[i]
-            if rel['sec'] == sec and rel['type'] == RelocType.R_MIPS_LO16:
-                if not check_sym or rel['symIx'] == sym:
-                    if not check_reg or (rel['addend'] >> 21) & 0x1f == reg:
-                        return i
+        for b in range(2):
+            i = start_index
+            while i < min(start_index + 256, len(rel_table)):
+                rel = rel_table[i]
+                if i != index and rel['type'] == RelocType.R_MIPS_HI16 and (rel_table[i]['addend'] >> 16) & 0x1f == reg:
+                    break
+                if rel['sec'] == sec and rel['type'] == RelocType.R_MIPS_LO16:
+                    if not check_sym or rel['symIx'] == sym:
+                        if not check_reg or (rel['addend'] >> 21) & 0x1f == reg:
+                            return i
+                i += 1
+            if b == 0:
+                start_index = index + 1
+            elif b == 1:
+                addr = check_for_branch(rel_table, index, file, True)
+                if addr != -1:
+                    new_index = find_next_rel(rel_table, addr)
+                    if new_index != -1:
+                        start_index = new_index
+                    else: break
+                else: break
         check_reg = t & 1 == 1
         check_sym = t == 2
+        
     print(f"xff_parser: Can't find LO16 pair for HI16 ({index})")
     return 0
 
@@ -410,7 +488,7 @@ def search_reloc_hi(rel_table, index: int):
     # 3: Tries just checking the register
     for t in range(3):
         i = index-1
-        while i >= 0:
+        while i >= max(i - 256, 0):
             rel = rel_table[i]
             if rel['type'] == RelocType.R_MIPS_HI16 and rel['addend'] & 0xfc000000 == 0x3c000000 and rel['sec'] == sec:
                 if not check_sym or rel['symIx'] == sym:

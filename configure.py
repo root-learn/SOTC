@@ -1,4 +1,4 @@
-#!./python3/bin/python3
+#!./.python3/bin/python3
 
 import argparse
 import os
@@ -29,6 +29,8 @@ CUSTOM_SPECS_FILE = f"{TOOLS_DIR}/cc/{COMPILER}/lib/regnames.specs"
 
 GAME_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} $optlevel -g2 $regnames"
 
+XFF_COMPILE_CMD = f"{GAME_CC_DIR}/ee-gcc -c {COMMON_INCLUDES} $optlevel -G0 -g2 $regnames"
+
 # Custom spec rule that invokes the preprocessor before assembling
 # avoids us having to manually pipe each step and just use GCC
 # it defines PREPROCESS_ASM so it can be checked in source if need be
@@ -51,14 +53,14 @@ def exec_shell(command: List[str], stdout=subprocess.PIPE) -> str:
     return ret.stdout
 
 
-def clean():
+def clean(target):
     if os.path.exists(".splache"):
         os.remove(".splache")
     if os.path.exists(CUSTOM_SPECS_FILE):
         os.remove(CUSTOM_SPECS_FILE)
-    shutil.rmtree("asm", ignore_errors=True)
-    shutil.rmtree("assets", ignore_errors=True)
-    shutil.rmtree("build", ignore_errors=True)
+    shutil.rmtree(f"asm/{target}", ignore_errors=True)
+    shutil.rmtree(f"assets/{target}", ignore_errors=True)
+    shutil.rmtree(f"build/{target}", ignore_errors=True)
 
 
 def write_permuter_settings():
@@ -77,7 +79,7 @@ compiler_type = "gcc"
         )
 
 
-def build_stuff(basename, linker_entries: List[LinkerEntry]):
+def build_stuff(basename, linker_entries: List[LinkerEntry], is_xff, split):
     built_objects: Set[Path] = set()
 
     def build(
@@ -103,23 +105,40 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
                 implicit_outputs=implicit_outputs,
             )
 
-    ninja = ninja_syntax.Writer(open(str(ROOT / "build.ninja"), "w"), width=9999)
+    ninja = ninja_syntax.Writer(open(str(ROOT / f"{basename}.ninja"), "w"), width=9999)
 
     # Rules
     cross = "mips-linux-gnu-"
-    ld_args = f"-EL -T config/{basename}_undefined_syms_auto.txt -T config/{basename}_undefined_funcs_auto.txt -T config/undefined_syms.txt -Map $mapfile -T $in -o $out"
+    if not is_xff:
+        ld_args = f"-EL -T config/{basename}/{basename}_undefined_syms_auto.txt -T config/{basename}/{basename}_undefined_funcs_auto.txt -T config/{basename}/undefined_syms.txt -Map $mapfile -T $in -o $out"
+    else:
+        ld_args = f"-EL -T config/{basename}/{basename}_undefined_syms_auto.txt -T config/{basename}/{basename}_undefined_funcs_auto.txt -T config/{basename}/undefined_syms.txt -Map $mapfile -r -T $in -o $out"
 
-    ninja.rule(
-        "as",
-        description="as $in",
-        command=f"cpp {COMMON_INCLUDES} $in | {cross}as -no-pad-sections -EL -march=5900 -mabi=eabi -Iinclude -o $out && python3 tools/elf_patcher.py $out gas $override",
-    )
+    if not is_xff:
+        ninja.rule(
+            "as",
+            description="as $in",
+            command=f"cpp {COMMON_INCLUDES} $in | {cross}as -no-pad-sections -EL -march=5900 -mabi=eabi -Iinclude -o $out && python3 tools/elf_patcher.py $out gas $override",
+        )
+        
+        ninja.rule(
+            "cc",
+            description="cc $in",
+            command=f"{GAME_COMPILE_CMD} $in -o $out && {cross}strip $out -N dummy-symbol-name",
+        )
 
-    ninja.rule(
-        "cc",
-        description="cc $in",
-        command=f"{GAME_COMPILE_CMD} $in -o $out && {cross}strip $out -N dummy-symbol-name",
-    )
+    else:
+        ninja.rule(
+            "as",
+            description="as $in",
+            command=f"cpp {COMMON_INCLUDES} $in | iconv -f=UTF-8 -t=EUC-JP $in | {cross}as -no-pad-sections -EL -march=5900 -mabi=eabi -Iinclude -o $out",
+        )
+        
+        ninja.rule(
+            "cc",
+            description="cc $in",
+            command=f"{XFF_COMPILE_CMD} $in -o $out && {cross}strip $out -N dummy-symbol-name",
+        )
 
     ninja.rule(
         "ld",
@@ -133,11 +152,18 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
         command="sha1sum -c $in && touch $out",
     )
 
-    ninja.rule(
-        "elf",
-        description="elf $out",
-        command=f"{cross}objcopy $in $out -O binary",
-    )
+    if not is_xff:
+        ninja.rule(
+            "elf",
+            description="elf $out",
+            command=f"{cross}objcopy $in $out -O binary",
+        )
+    else:
+        ninja.rule(
+            "elf",
+            description="elf $out",
+            command=f"{cross}objcopy $in $out -O binary && python3 tools/fix_xff.py $out",
+        )
 
     for entry in linker_entries:
         seg = entry.segment
@@ -148,9 +174,9 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
         if entry.object_path is None:
             continue
 
-        if entry.object_path.is_relative_to(Path("build/asm/loader/sdk")):
+        if entry.object_path.is_relative_to(Path("build/SCPS_150.97/asm/SCPS_150.97/sdk")):
             override = "--section-align .text:0x4"
-        elif entry.object_path.is_relative_to(Path("build/asm/loader/data/section")):
+        elif entry.object_path.is_relative_to(Path("build/SCPS_150.97/asm/SCPS_150.97/data/section")):
             override = "--section-align .data:0x4"
         else:
             override = ""
@@ -174,17 +200,18 @@ def build_stuff(basename, linker_entries: List[LinkerEntry]):
             build(entry.object_path, entry.src_paths, "cc", variables={"regnames": regnames, "optlevel": opt})
         elif isinstance(
             seg, splat.segtypes.common.databin.CommonSegDatabin
-        ) or isinstance(seg, splat.segtypes.common.rodatabin.CommonSegRodatabin):
+        ) or isinstance(seg, splat.segtypes.common.rodatabin.CommonSegRodatabin
+        ) or isinstance(seg, splat.segtypes.common.textbin.CommonSegTextbin):
             build(entry.object_path, entry.src_paths, "as", variables={"override": override})
         else:
             print(f"ERROR: Unsupported build segment type {seg.type}")
             sys.exit(1)
 
 
-    elf_path = f"build/{basename}"
-    pre_elf_path = f"build/{basename}.elf"
+    elf_path = f"build/{basename}/{basename}"
+    pre_elf_path = f"build/{basename}/{basename}.elf"
     ld_path = f"{basename}.ld"
-    map_path = f"build/{basename}.map"
+    map_path = f"build/{basename}/{basename}.map"
 
     ninja.build(
         pre_elf_path,
@@ -248,29 +275,39 @@ def replace_instructions_with_opcodes(asm_folder: Path) -> None:
                 file.write(content)
 
 
-def split_binaries(rescan, targets=[]):
+def split_binaries(args):
     target_aliases = {
         "loader" : "SCPS_150.97", 
-        "kernel" : "KERNEL.XFF"
+        "kernel" : "KERNEL.XFF",
         }
     
     target_files = []
     
-    if not targets:
+    if not args.target:
         target_files = list(target_aliases.values())
     else:
-        for target in targets:
+        for target in args.target:
             if target not in target_aliases.keys():
                 print(f"Error: Unrecognized target. Valid targets: {list(target_aliases.keys())}." )
                 return
             target_files.append(target_aliases.get(target))
 
+    ninja = ninja_syntax.Writer(open(str(ROOT / "build.ninja"), "w"), width=9999)
+    ninja.rule(
+        "ninja",
+        description="ninja $in",
+        command=f"ninja -f $in",
+    )
+
     for target_file in target_files:
 
-        if rescan:
-            parse_xff_relocs.main(XFF_FILE)
+        if args.clean:
+            clean(target_file)
+        
+        if args.rescan:
+            parse_xff_relocs.main(f"iso/{target_file}")
 
-        yaml_file = f"config/{target_file}.yaml"
+        yaml_file = f"config/{target_file}/{target_file}.yaml"
 
         split.main([Path(yaml_file)], modes="all", verbose=False)
 
@@ -278,7 +315,16 @@ def split_binaries(rescan, targets=[]):
 
         create_custom_specs()
 
-        build_stuff(target_file, linker_entries)
+        build_stuff(target_file, linker_entries, target_file != "SCPS_150.97", split)
+        
+        ninja.build(
+            f"build/{target_file}/{target_file}",
+            "ninja",
+            f"{target_file}.ninja",
+        )
+        
+        if not args.no_short_loop_workaround:
+            replace_instructions_with_opcodes(split.config["options"]["asm_path"])
 
         
 
@@ -319,21 +365,12 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.clean:
-        clean()
-
     if args.cleansrc:
         shutil.rmtree("src", ignore_errors=True)
 
-    if args.target:
-        split_binaries(args.rescan, args.target)
-    else:
-        split_binaries(args.rescan)
+    split_binaries(args)
 
     write_permuter_settings()
-
-    if not args.no_short_loop_workaround:
-        replace_instructions_with_opcodes(split.config["options"]["asm_path"])
 
     if not os.path.isfile("compile_commands.json"):
         exec_shell(["ninja", "-t", "compdb"], open("compile_commands.json", "w"))

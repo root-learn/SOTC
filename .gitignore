@@ -51,7 +51,8 @@ dkms.conf
 
 .ninja_log
 .splache
-build.ninja
+*.ninja
+#build.ninja
 SCPS_150.97
 *.ld
 

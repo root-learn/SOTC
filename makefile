@@ -30,3 +30,10 @@ KERNEL.XFF.ninja:
 
 FORCE:
 
+
+clean:
+	@rm -rf asm assets build
+	@rm -rf *.ninja
+.PHONY : clean
+
+

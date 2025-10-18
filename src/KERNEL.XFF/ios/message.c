@@ -78,10 +78,10 @@ loop_5:
     }
     arg0->unk14 = 0;
     if (var_s4 != NULL)
-        iosCallBackThreadMgr(func_40016BB8, arg0->unk18);
+        iosCallBackThreadMgr(func_40016BB8, (s32)arg0->unk18);
     
     if (var_s6 != NULL)
-        iosCallBackThreadMgr(func_40016BD0, var_s6);
+        iosCallBackThreadMgr(func_40016BD0, (s32)var_s6);
     
     SignalSema(iosSystemSema);
     return var_s2;

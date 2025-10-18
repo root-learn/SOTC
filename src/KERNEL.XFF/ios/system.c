@@ -5,21 +5,19 @@
 #include "sdk/ee/eeregs.h"
 #include "sdk/ee/sif.h"
 #include "ios/kernel.h"
+#include "loaderSys2.h"
 
 extern void iosCreateIdleThread();
 extern void iosCreateIopMgr();
 extern void iosCreatePrintMgr();
 extern void iosInitMessageSystem();
 extern void iosInitThreadSystem();
-extern s32 CreateSema(struct SemaParam *);
-extern void LoaderSysEntryExternalSemaList(s32 arg1);
 extern void iosSignalIopSema();
 extern void iosWaitIopSema();
 extern void iosAddIntcHandler(s32 arg0, void* arg1);
 
-
 // prototypes
-void func_40013058();
+s32 func_40013058();
 
 
 // .data
@@ -43,8 +41,6 @@ static volatile s64 D_4007CC60;
 static s32 D_4007CC68;
 static s32 D_4007CC6C;
 static void (*D_4007CC70[])();
-
-
 
 
 
@@ -76,7 +72,12 @@ s32 iosCreateSema(s32 arg0, s32 arg1)
     return temp_v0;
 }
 
-INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosDeleteSema);
+//INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosDeleteSema);
+void iosDeleteSema(s32 arg0)
+{
+    LoaderSysDeleteExternalSemaList(arg0);
+    DeleteSema(arg0);
+}
 
 //INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosInitIntrSystem);
 void iosInitIntrSystem()
@@ -114,7 +115,17 @@ s64 iosGetTCountExtension()
     return D_4007CC60 | *T0_COUNT;
 }
 
-INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosGetSecondFromTCount);
+//INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosGetSecondFromTCount);
+// match from Mc-muffin https://decomp.me/scratch/5FEMU
+f32 iosGetSecondFromTCount(u64 arg0)
+{
+    u64 temp_v0;
+    u64 temp_a1;
+
+    temp_v0 = (arg0 / 150000000);
+    temp_a1 = arg0 - (temp_v0 * 150000000);
+    return temp_v0 + temp_a1 * 0.0000000066666666f;
+}
 
 //INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosResetCpuRapCounter);
 void iosResetCpuRapCounter(u32 arg0)
@@ -171,7 +182,14 @@ s32 iosEI()
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosLoaderResetEntry);
 
-INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", func_40013058);
+//INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", func_40013058);
+s32 func_40013058()
+{
+    D_4007CC60 += 0x10000;
+    *T0_MODE = 0xA80;
+    asm("sync; ei");
+    return 0;
+}
 
 //INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", func_40013090);
 void func_40013090()

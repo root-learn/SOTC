@@ -42,7 +42,7 @@ INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/subthread", isysGetSubThreadSt
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/subthread", isysGetSubThreadStackSize);
 
-void isysDumpSubThreadPC(void) {
-}
+void isysDumpSubThreadPC(void)
+{}
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/subthread", isysDebugSetSubThreadSleepProtection);

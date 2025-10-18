@@ -1,6 +1,11 @@
 #include "common.h"
+#include <stdarg.h>
 
-INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", func_400199B0);
+//INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", func_400199B0);
+s32 func_400199B0(s32 arg0, ...)
+{
+    return 0;
+}
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", func_40019A00);
 
@@ -130,7 +135,7 @@ INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", DldExceptionByOriginA
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", isysSearchCalledModuleFuncNameByAddr);
 
-void isysCreateExceptionThread(void) {
-}
+void isysCreateExceptionThread(void)
+{}
 
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/isys/module", func_4001D3A8);

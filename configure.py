@@ -292,12 +292,12 @@ def split_binaries(args):
                 return
             target_files.append(target_aliases.get(target))
 
-    ninja = ninja_syntax.Writer(open(str(ROOT / "build.ninja"), "w"), width=9999)
-    ninja.rule(
-        "ninja",
-        description="ninja $in",
-        command=f"ninja -f $in",
-    )
+#    ninja = ninja_syntax.Writer(open(str(ROOT / "build.ninja"), "w"), width=9999)
+#    ninja.rule(
+#        "ninja",
+#        description="ninja $in",
+#        command=f"ninja -f $in",
+#    )
 
     for target_file in target_files:
 
@@ -317,11 +317,11 @@ def split_binaries(args):
 
         build_stuff(target_file, linker_entries, target_file != "SCPS_150.97", split)
         
-        ninja.build(
-            f"build/{target_file}/{target_file}",
-            "ninja",
-            f"{target_file}.ninja",
-        )
+#        ninja.build(
+#            f"build/{target_file}/{target_file}",
+#            "ninja",
+#            f"{target_file}.ninja",
+#        )
         
         if not args.no_short_loop_workaround:
             replace_instructions_with_opcodes(split.config["options"]["asm_path"])

@@ -5,7 +5,7 @@
 extern s32 iosSystemSema;
 
 void iosInit();
-s32 iosCreateSema(s32 arg0, s32 arg1);
+s32 iosCreateSema(s32 arg0, s32 arg1, s32 arg2);
 void iosDeleteSema(s32 arg0);
 void iosInitIntrSystem();
 s64 iosGetTCount();

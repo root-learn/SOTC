@@ -59,7 +59,7 @@ void iosInit()
 INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosAddIntcHandler);
 
 //INCLUDE_ASM("asm/KERNEL.XFF/nonmatchings/ios/system", iosCreateSema);
-s32 iosCreateSema(s32 arg0, s32 arg1)
+s32 iosCreateSema(s32 arg0, s32 arg1, s32 arg2)
 {
     struct SemaParam sparam;
     s32 temp_v0;

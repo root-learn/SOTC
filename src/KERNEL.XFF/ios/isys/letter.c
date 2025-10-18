@@ -24,6 +24,7 @@ static LetterType* D_400F5B98[20];
 
 // prototypes
 void func_4002D1E0(Letter*, s32, s32, LetterType*);
+void func_4002D638(LetterPost* arg0);
 
 
 
@@ -238,7 +239,7 @@ LetterPost* create_letter_post(void)
 {
     LetterPost* temp_v0;
 
-    temp_v0 = iosMallocAlign(g_pLetterMem, sizeof(LetterPost), 0x10);
+    temp_v0 = iosMallocAlign((s32)g_pLetterMem, sizeof(LetterPost), 0x10);
     func_4002D638(temp_v0);
     return temp_v0;
 }

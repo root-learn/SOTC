@@ -76,7 +76,6 @@ s32 get_letter_receiver_obj_group(Letter* arg0);
 s32 get_letter_receiver_data(Letter* arg0);
 void init_letter_manager(void);
 void send_letter(LetterLink* arg0);
-s32 func_4002D480(struct letter_unkstrc* arg0, Letter* arg1, LetterType* arg2);
 LetterPost* create_letter_post(void);
 void check_free_letter_post(LetterPost** arg0);
 void discard_all_letter_in_post(LetterPost* arg0);

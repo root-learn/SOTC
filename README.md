@@ -29,9 +29,8 @@ We are currently targeting the Preview Version's main ELF (``SCPS_150.97``, sha1
 
 ### Setup
 1. Create an ``iso`` directory in the root directory
-2. From a Shadow of the Colossus Preview Version ISO, extract ``SCPS_150.97`` into the ``iso`` directory
-3. ``configure-SCPS_105.97.py`` or ``configure-kernel.py`` (optionally pass ``-c`` to do a clean split)
-4. ``ninja``
+2. From a Shadow of the Colossus Preview Version ISO, extract ``SCPS_150.97`` and ``KERNEL.XFF`` into the ``iso`` directory
+3. Just run ``make`` to build all modules (``make loader`` or ``make kernel`` to build just one module. ``make clean`` also works)
 
 ## Contributing
 Use our [contribution guide](docs/CONTRIBUTING.md).

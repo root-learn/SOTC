@@ -46,10 +46,12 @@ jobs:
 
       - name: Build main ELF
         run: |
+          source .python3/bin/activate
           make loader
 
       - name: Build KERNEL.XFF
         run: |
+          source .python3/bin/activate
           make kernel
 
       - name: Post to frogress endpoint

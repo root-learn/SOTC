@@ -51,9 +51,9 @@ dkms.conf
 
 .ninja_log
 .splache
-build.ninja
+*.ninja
+#build.ninja
 SCPS_150.97
-KERNEL.XFF.*
 *.ld
 
 
@@ -64,6 +64,8 @@ KERNEL.XFF.*
 /asm
 /assets
 /build
+/.python3
+/target
 
 /tools/cc/*
 

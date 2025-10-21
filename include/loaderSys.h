@@ -34,6 +34,11 @@ typedef struct unk_00131D00_s
     struct t_xffEntPntHdr *unk44;
 } unk_00131D00_s;
 
+typedef struct unk_00131E80_s {
+    int unk4;
+    char* name;
+} unk_00131E80_s;
+
 typedef s32(dispose_reloc_func)(struct t_xffEntPntHdr *, struct t_xffRelocAddrEnt *, unk_stack_40 *);
 typedef void *(mallocAlign_func)(s32, u32);
 typedef void *(mallocMaxAlign_func)(s32);
@@ -45,7 +50,7 @@ void RelocateElfInfoHeader(struct t_xffEntPntHdr *xffEp);
 s32 OutputLinkerScriptFile(struct t_xffEntPntHdr *, char *, ldrDbgPrintf_func *);
 void func_00100A58(void);
 void LoaderSysJumpRecoverPointNoStateSetting(char *format, ...);
-void *LoaderSysJumpRecoverPoint(char *format, ...);
+void LoaderSysJumpRecoverPoint(char *format, ...);
 struct t_xffEntPntHdr *func_00100D48(char *module_path);
 void *MoveElf(struct t_xffEntPntHdr *xffEp, void *arg1);
 unk_00131D00_s *func_001013C8(const char *filename);

@@ -1,0 +1,4 @@
+int iosGetCurrentDC() 
+{
+    return gData;
+}

@@ -1,8 +1,10 @@
-extern void iosDlChainTailCurrent(int);
+extern s32 D_40045A00;
 
-int iosSetCurrentDC()
+extern void iosDlChainTailCurrent(s32);
+
+s32 iosSetCurrentDC()
 
 {
-  iosDlChainTailCurrent(gData);
+  iosDlChainTailCurrent(D_40045A00);
   return;
 }

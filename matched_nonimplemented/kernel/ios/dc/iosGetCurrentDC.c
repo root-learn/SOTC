@@ -1,4 +1,5 @@
-int iosGetCurrentDC() 
+extern s32 D_40045A00;
+s32 iosGetCurrentDC() 
 {
-    return gData;
+    return D_40045A00;
 }

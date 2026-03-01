@@ -1,16 +1,20 @@
-extern void iosDlChainTailCurrent(int index);
+extern s32 D_40045A08; //glastindex
+extern s32 D_40092288[];  //gbasedindex
+extern s32 D_40045A00; //gdata
 
-void iosPushDCWithClear(int param_1) 
+extern void iosDlChainTailCurrent(s32* index);
+
+void iosPushDCWithClear(s32* param_1) 
 {
-    int *indexHelper;
+    s32 *indexHelper;
 
-    indexHelper = &gBasedIndex + gLastIndex;
-    gLastIndex = gLastIndex + 1;
+    indexHelper = D_40092288 + D_40045A08;
+    D_40045A08++;
     *indexHelper = param_1;
-    iosDlChainTailCurrent(*indexHelper);
-    if ((*(int *)(param_1 + 0x170) & 1) != 0) {
-      iosDlChainTailCurrent(param_1 + 0xd0);
+    iosDlChainTailCurrent(param_1);
+    if ( ( param_1[92] & 1) != 0) {
+      iosDlChainTailCurrent(param_1 + 52);
     }
-    gData = param_1;
+    D_40045A00 = param_1;
     return;
 }

@@ -5,6 +5,6 @@ extern void iosDlChainTailCurrent(s32);
 s32 iosSetCurrentDC()
 
 {
-  iosDlChainTailCurrent(D_40045A00);
-  return;
+    iosDlChainTailCurrent(D_40045A00);
+    return;
 }
